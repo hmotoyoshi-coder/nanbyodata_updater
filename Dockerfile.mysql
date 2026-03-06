@@ -1,0 +1,6 @@
+FROM mysql:8.0
+
+
+# コンテナ内のmysqlユーザとグループをホストのcaseユーザに合わせる
+# https://blog.takekoshi.net/docker-mysql-uid/
+RUN groupmod -g ${UID} mysql && usermod -u ${GID} -g ${UID} mysql

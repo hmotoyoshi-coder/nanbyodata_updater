@@ -1,0 +1,16 @@
+# Pythonのベースイメージを指定
+FROM python:3.8
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# 必要なライブラリをインストールするためのリストを用意
+COPY requirements.txt ./
+
+# pip を使用して必要なライブラリをインストール
+RUN pip install --no-cache-dir -r requirements.txt
+
+# NLTK のコーパスやモデルデータをダウンロード(必要ならダウンロード)
+RUN python -m nltk.downloader punkt
+
+CMD ["python", "-V"]

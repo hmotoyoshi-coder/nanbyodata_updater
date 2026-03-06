@@ -1,0 +1,73 @@
+services:
+  robot:
+    container_name: nanbyodata-robot-update
+    build:
+      context: .
+      dockerfile: Dockerfile.robot
+    user: "${UID}:${GID}"
+    env_file:
+      - env/.env
+    volumes:
+      # - ./dictionary:/dictionary
+      - ./data:/data
+    networks:
+      - nanbyodata_updater
+  python:
+    container_name: nanbyodata-python-update
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    image: nanbyodata-python-update
+    user: "${UID}:${GID}"
+    volumes:
+      - ./bin/python:/usr/src/app
+      # - ./dictionary:/dictionary
+      - ./data:/data
+    networks:
+      - nanbyodata_updater
+  mysql:
+    container_name: ${CONTAINER_NAME_MYSQL:-nanbyodata-mysql}
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql
+    user: "${UID}:${GID}"
+    ports:
+      - ${MYSQL_PORT:-3306}:3306
+    environment:
+      - TZ=Asia/Tokyo
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PORT=${MYSQL_PORT}
+    volumes:
+      - ${MYSQL_DATA_DIR:-./mysql/data}:/var/lib/mysql/
+      - ./mysql/logs:/var/log/mysql
+      - ./mysql/scripts:/scripts
+    networks:
+      - nanbyodata_updater
+  perl:
+    container_name: nanbyodata-perl-update
+    build:
+      context: .
+      dockerfile: Dockerfile.perl
+    image: nanbyodata-perl-update
+    # user: "${UID}:${GID}"
+    volumes:
+      - ./bin/perl:/usr/src/app
+      - ./data:/data
+      - ./dictionary:/dictionary
+    environment:
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASS=${MYSQL_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${MYSQL_PORT}
+    networks:
+      - nanbyodata_updater
+
+networks:
+  nanbyodata_updater:
+    ipam:
+      config:
+        - subnet: ${SUBNET}
